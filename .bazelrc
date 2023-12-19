@@ -1,0 +1,16 @@
+# 防止超时
+build                   --remote_timeout=3600000
+build                   --experimental_ui_max_stdouterr_bytes=50485760
+build                   --curses=no
+
+build:remote            --remote_executor=grpc://IP地址或者域名:8980
+build:remote            --remote_cache=grpc://IP地址或者域名:8980
+
+build:luckfox           --crosstool_top=//toolchain:clang_suite
+build:luckfox           --cpu=luckfox
+build:luckfox           --host_crosstool_top=@bazel_tools//tools/cpp:toolchain
+
+build                   --config=remote
+
+build                   --config=luckfox
+

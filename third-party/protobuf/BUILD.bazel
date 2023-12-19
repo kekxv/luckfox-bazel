@@ -1,0 +1,58 @@
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
+
+cmake(
+    name = "protobuf-build",
+    build_args = ["-j4"],
+    cache_entries = {
+        "BUILD_SHARED_LIBS": "OFF",
+        "protobuf_BUILD_TESTS": "OFF",
+        "protobuf_PROTOC_EXE": "OFF",
+        "protobuf_BUILD_EXAMPLES": "OFF",
+        "WITH_PROTOC": "OFF",
+        "CMAKE_BUILD_TYPE": "RELEASE",
+        "CMAKE_C_FLAGS": "${CMAKE_C_FLAGS:-} -fPIC",
+        "CMAKE_CXX_FLAGS": "${CMAKE_CXX_FLAGS:-} -fPIC -lstdc++ -std=c++11",
+        "CMAKE_MODULE_LINKER_FLAGS": "${CMAKE_MODULE_LINKER_FLAGS:-} -lstdc++ -std=c++11",
+        "CMAKE_EXE_LINKER_FLAGS": "${CMAKE_EXE_LINKER_FLAGS:-} -lstdc++ -std=c++11",
+        "CMAKE_SYSTEM_NAME": "Linux",
+    },
+    copts = [
+        "-std=c++11",
+    ],
+    generate_crosstool_file = True,
+    lib_source = select({
+        "//conditions:default": "@protobuf//:all",
+    }),
+    linkopts = select({
+        "//conditions:default": [
+            "-std=c++11",
+            "-lstdc++",
+        ],
+    }),
+    out_include_dir = select({
+        "//conditions:default": "include",
+    }),
+    out_static_libs = select({
+        "//conditions:default": [
+            "libprotoc.a",
+            "libprotobuf.a",
+            "libprotobuf-lite.a",
+        ],
+    }),
+    tags = ["cache"],
+    target_compatible_with = select({
+        "//conditions:default": [],
+    }),
+    working_directory = "cmake",
+    deps = ["//third-party/zlib"],
+)
+
+cc_library(
+    name = "protobuf",
+    linkopts = [],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":protobuf-build",
+        "//third-party/zlib",
+    ],
+)

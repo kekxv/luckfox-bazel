@@ -1,0 +1,7 @@
+cc_binary(
+    name = "hello_ncnn",
+    srcs = ["hello_ncnn.cpp"],
+    deps = [
+        "//third-party/ncnn",
+    ],
+)

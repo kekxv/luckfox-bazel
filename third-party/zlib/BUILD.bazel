@@ -1,0 +1,30 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
+
+package(default_visibility = ["//visibility:public"])
+
+cmake(
+    name = "zlib",
+    cache_entries = select({
+        "//conditions:default": {
+            "BUILD_SHARED_LIBS": "OFF",
+        },
+    }),
+    lib_source = select({
+        "//conditions:default": "@zlib_patch//:all",
+    }),
+    out_shared_libs = select({
+        "//conditions:default": [
+        ],
+    }),
+    out_static_libs = select({
+        "//conditions:default": ["libz.a"],
+    }),
+)
+
+cc_binary(
+    name = "zlib_usage_example",
+    srcs = ["zlib-example.cpp"],
+    deps = [":zlib"],
+)

@@ -1,0 +1,48 @@
+load(":cc_luckfox_toolchain_config.bzl", "cc_luckfox_toolchain_config")
+
+cc_luckfox_toolchain_config(
+    name = "luckfox_toolchain_config",
+    path = "/opt/toolchain/luckfox/arm-rockchip830-linux-uclibcgnueabihf/",
+)
+
+constraint_setting(name = "incompatible_setting")
+
+constraint_value(
+    name = "incompatible",
+    constraint_setting = ":incompatible_setting",
+)
+
+cc_toolchain_suite(
+    name = "clang_suite",
+    toolchains = {
+        "luckfox": ":luckfox_toolchain",
+    },
+)
+
+alias(
+    name = "toolchain",
+    actual = ":clang_suite",
+)
+
+filegroup(name = "empty")
+
+config_setting(
+    name = "luckfox",
+    values = {"cpu": "armv7l"},
+    visibility = ["//visibility:public"],
+)
+
+cc_toolchain(
+    name = "luckfox_toolchain",
+    all_files = ":empty",
+    ar_files = ":empty",
+    as_files = ":empty",
+    compiler_files = ":empty",
+    dwp_files = ":empty",
+    linker_files = ":empty",
+    objcopy_files = ":empty",
+    strip_files = ":empty",
+    supports_param_files = 0,
+    toolchain_config = ":luckfox_toolchain_config",
+    toolchain_identifier = "luckfox-toolchain",
+)
