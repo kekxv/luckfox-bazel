@@ -1,0 +1,52 @@
+name: build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        bazel-version: [6.4.0]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Mount bazel cache  # Optional
+        uses: actions/cache@v3
+        with:
+          path: "~/.cache/bazel"
+          key: bazel
+      - uses: bazelbuild/setup-bazelisk@main
+        with:
+          bazelisk-version: 1.18.0
+      - name: Mount bazel cache  # Optional
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/bazel
+            ~/.cache/bazelisk
+          key: bazel
+      - name: Set Bazel Version ${{ matrix.bazel-version }} .
+        run: |
+          echo ${{ matrix.bazel-version }} > .bazelversion 
+
+      - name: bazelisk version
+        run: |
+          bazel version
+        env:
+          USE_BAZEL_VERSION: ${{ matrix.bazel-version }}
+
+      - name: Bazel build test
+        run: |
+          bazel build --curses=no //test/...
+        env:
+          USE_BAZEL_VERSION: ${{ matrix.bazel-version }}
+
+      - name: Bazel build .
+        run: |
+          bazel build --curses=no //...
+        env:
+          USE_BAZEL_VERSION: ${{ matrix.bazel-version }}

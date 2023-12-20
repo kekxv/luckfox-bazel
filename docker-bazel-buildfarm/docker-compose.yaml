@@ -1,0 +1,64 @@
+version: "3.7"
+
+services:
+  redis:
+    image: redis:5.0.9
+    container_name: buildfarm_redis
+    restart: unless-stopped
+    networks:
+      buildfarm_net:
+        aliases:
+          - redis
+  server:
+    image: bazelbuild/buildfarm-server:latest
+    container_name: buildfarm_server
+    restart: unless-stopped
+    ports:
+      - "8980:8980"
+    depends_on:
+      - "redis"
+    links:
+      - "redis"
+    volumes:
+      - "./config/config.yaml:/app/build_buildfarm/examples/config.minimal.yml"
+    networks:
+      buildfarm_net:
+        aliases:
+          - server
+  worker:
+    image: bazelbuild/buildfarm-worker:latest
+    container_name: buildfarm_worker
+    restart: unless-stopped
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        ln -s /usr/ /opt/usr
+        sed  -i "s/archive.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g" /etc/apt/sources.list
+        apt update
+        apt install -y wget cmake make automake
+        apt install -y software-properties-common lsb-release
+        ln -s /bin/python3 /bin/python
+        JAVA_RUNFILES=/app JAVABIN=java /app/build_buildfarm/buildfarm-shard-worker.binary /config/config.yaml
+    ports:
+      - "8981:8981"
+    depends_on:
+      - "redis"
+      - "server"
+    links:
+      - "redis"
+      - "server"
+    volumes:
+      - "./config:/config"
+      - "./tmp/worker:/tmp/worker"
+    networks:
+      buildfarm_net:
+        aliases:
+          - worker
+
+
+networks:
+  buildfarm_net:
+    ipam:
+      config:
+        - subnet: 172.21.0.0/24

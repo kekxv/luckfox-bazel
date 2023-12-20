@@ -6,6 +6,7 @@ load("//third-party/ncnn:ncnn_repositories.bzl", "ncnn_repositories")
 load("//third-party/opencv:opencv_repositories.bzl", "opencv_repositories")
 load("//third-party/protobuf:protobuf_repositories.bzl", "protobuf_repositories")
 load("//third-party/zlib:zlib_repositories.bzl", "zlib_repositories")
+load("//third-party/zxing-cpp:zxing_repositories.bzl", "zxing_repositories")
 
 # buildifier: disable=unnamed-macro
 def repositories():
@@ -14,3 +15,4 @@ def repositories():
     opencv_repositories()
     protobuf_repositories()
     zlib_repositories()
+    zxing_repositories()

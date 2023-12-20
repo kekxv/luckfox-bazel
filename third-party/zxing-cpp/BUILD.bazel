@@ -1,0 +1,32 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
+
+package(default_visibility = ["//visibility:public"])
+
+cmake(
+    name = "zxing",
+    cache_entries = {
+        "BUILD_SHARED_LIBS": "OFF",
+        "BUILD_EXAMPLES": "OFF",
+    },
+    lib_source = "@zxing//:all",
+    out_include_dir = "include/ZXing",
+    out_static_libs = ["libZXing.a"],
+    visibility = ["//visibility:public"],
+)
+
+cc_binary(
+    name = "zxing_example",
+    srcs = ["zxing-example.cpp"],
+    args = [
+        "$(location :test/qr_test.jpg)",
+    ],
+    copts = ["-std=c++17"],
+    data = [
+        ":test/qr_test.jpg",
+    ],
+    deps = [
+        ":zxing",
+        "//third-party/opencv",
+    ],
+)
