@@ -39,6 +39,12 @@ jobs:
         env:
           USE_BAZEL_VERSION: ${{ matrix.bazel-version }}
 
+      - name: Bazel build test
+        run: |
+          bazel build --curses=no //test/...
+        env:
+          USE_BAZEL_VERSION: ${{ matrix.bazel-version }}
+
       - name: Bazel build .
         run: |
           bazel build --curses=no //...
