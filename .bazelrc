@@ -6,11 +6,10 @@ build                   --curses=no
 build:remote            --remote_executor=grpc://IP地址或者域名:8980
 build:remote            --remote_cache=grpc://IP地址或者域名:8980
 
-build:luckfox           --crosstool_top=//toolchain:clang_suite
-build:luckfox           --cpu=luckfox
-build:luckfox           --host_crosstool_top=@bazel_tools//tools/cpp:toolchain
+build:luckfox-platform  --crosstool_top=//toolchain/toolchains/cc-armv7l-luckfox:gcc_toolchain
+build:luckfox-platform  --cpu=luckfox
+build:luckfox-platform  --platforms=//toolchain/platforms:luckfox
 
-build                   --config=remote
-
-build                   --config=luckfox
+#build                   --config=remote
+build                   --config=luckfox-platform
 

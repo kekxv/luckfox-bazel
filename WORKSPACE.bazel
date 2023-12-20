@@ -15,11 +15,18 @@ load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_depende
 # https://bazelbuild.github.io/rules_foreign_cc/0.10.1/flatten.html#rules_foreign_cc_dependencies
 #rules_foreign_cc_dependencies()
 rules_foreign_cc_dependencies(
-    register_built_tools = False,
-    register_default_tools = False,
-    register_preinstalled_tools = True,
-    register_toolchains = True,
+    # register_built_tools = True,
+    # register_default_tools = True,
+    # register_preinstalled_tools = True,
+    # register_toolchains = True,
 )
+
+load("//toolchain:deps.bzl", "deps")
+load("//toolchain:toolchains.bzl", "register_all_toolchains")
+
+deps()
+
+register_all_toolchains()
 
 load("//third-party:repositories.bzl", "repositories")
 
