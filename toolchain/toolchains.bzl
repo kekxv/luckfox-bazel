@@ -14,6 +14,6 @@ def register_all_toolchains():
     native.register_toolchains(
         "//toolchain/toolchains/cc-armv7l-luckfox:armv7l_luckfox_linux_toolchain",
     )
-    # native.register_execution_platforms(
-    #     "//toolchain/platforms:luckfox",
-    # )
+    native.register_execution_platforms(
+        "//toolchain/platforms:luckfox",
+    )

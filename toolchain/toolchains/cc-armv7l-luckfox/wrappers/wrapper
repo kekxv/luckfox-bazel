@@ -1,6 +1,21 @@
 #!/bin/bash
 
 NAME=$(basename "$0")
+ROOT_PATH=""
 TOOLCHAIN_BINDIR=external/cc-armv7l-luckfox/bin
-
-exec "${TOOLCHAIN_BINDIR}"/"${NAME}" "$@"
+if [ -z "$EXT_BUILD_ROOT" ]
+then
+  IFS="/"
+  array=($0)
+  for i in "${array[@]}"; #accessing each element of array
+  do
+    if [ "$i" = "toolchain" ]; then
+      break
+    else
+      ROOT_PATH="${ROOT_PATH}${i}/"
+    fi
+  done
+else
+  ROOT_PATH="$EXT_BUILD_ROOT/"
+fi
+exec "$ROOT_PATH${TOOLCHAIN_BINDIR}"/"${NAME}" "$@"
