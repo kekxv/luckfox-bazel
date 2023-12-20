@@ -10,6 +10,7 @@ cmake(
         "BUILD_EXAMPLES": "OFF",
     },
     lib_source = "@zxing//:all",
+    out_include_dir = "include/ZXing",
     out_static_libs = ["libZXing.a"],
     visibility = ["//visibility:public"],
 )
@@ -20,6 +21,7 @@ cc_binary(
     args = [
         "$(location :test/qr_test.jpg)",
     ],
+    copts = ["-std=c++17"],
     data = [
         ":test/qr_test.jpg",
     ],
