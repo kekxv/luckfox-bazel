@@ -19,9 +19,15 @@ jobs:
         with:
           path: "~/.cache/bazel"
           key: bazel
-      - uses: bazelbuild/setup-bazelisk@main
+      - uses: bazel-contrib/setup-bazel@0.12.1
         with:
           bazelisk-version: 1.18.0
+          # Avoid downloading Bazel every time.
+          bazelisk-cache: true
+          # Store build cache per workflow.
+          disk-cache: ${{ github.workflow }}
+          # Share repository cache between workflows.
+          repository-cache: true
       - name: Mount bazel cache  # Optional
         uses: actions/cache@v3
         with:
