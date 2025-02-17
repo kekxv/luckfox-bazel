@@ -1,15 +1,22 @@
 # 防止超时
-build                   --remote_timeout=3600000
-build                   --experimental_ui_max_stdouterr_bytes=50485760
-build                   --curses=no
+common                              --incompatible_disallow_empty_glob=False
+build                               --incompatible_disallow_empty_glob=False
+build                               --remote_timeout=36000000
+build                               --cxxopt='-std=c++17'
 
-build:remote            --remote_executor=grpc://IP地址或者域名:8980
-build:remote            --remote_cache=grpc://IP地址或者域名:8980
 
-build:luckfox-platform  --crosstool_top=//toolchain/toolchains/cc-armv7l-luckfox:gcc_toolchain
-build:luckfox-platform  --cpu=luckfox
-build:luckfox-platform  --platforms=//toolchain/platforms:luckfox
+build:remote_private                --strategy=remote
+build:remote_private                --genrule_strategy=remote
+build:remote_private                --spawn_strategy=remote
+#build:remote_private                --remote_instance_name=hardlinking
+build:remote_private                --remote_instance_name=fuse
 
-#build                   --config=remote
-build                   --config=luckfox-platform
+build:remote                        --config=remote_private
+build:remote                        --remote_executor=grpc://IP地址或者域名:8980
+build:remote                        --remote_cache=grpc://IP地址或者域名:8980
+
+build:luckfox-platform              --platforms=//toolchains/platforms:linux_luckfox
+
+#build                               --config=remote
+build                               --config=luckfox-platform
 

@@ -1,0 +1,13 @@
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+new_local_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:local.bzl", "new_local_repository")
+
+http_archive(
+    name = "openssl",
+    build_file_content = """filegroup(name = "all", srcs = glob(["**"]), visibility = ["//visibility:public"])""",
+    integrity = "sha256-4V3agv4v6BOdwqwho21MoB1TE8dfmfRsTooncJtylL8=",
+    strip_prefix = "openssl-3.4.0",
+    urls = [
+        "https://github.com/openssl/openssl/releases/download/openssl-3.4.0/openssl-3.4.0.tar.gz",
+    ],
+)

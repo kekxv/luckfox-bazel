@@ -1,0 +1,12 @@
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "curl",
+    build_file_content = """filegroup(name = "all", srcs = glob(["**"]), visibility = ["//visibility:public"])""",
+    integrity = "sha256-x8p9tIsJCXQ+rvNCUNoCwZvGHU8dzt1mA/EJQJU2q1Y=",
+    strip_prefix = "curl-8.11.1",
+    type = "tar.xz",
+    urls = [
+        "https://curl.se/download/curl-8.11.1.tar.xz",
+    ],
+)

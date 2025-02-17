@@ -1,0 +1,40 @@
+exec_properties = {
+    "OSFamily": "linux",
+    "container-image": "docker://ghcr.io/catthehacker/ubuntu:act-22.04@sha256:5f9c35c25db1d51a8ddaae5c0ba8d3c163c5e9a4a6cc97acd409ac7eae239448",
+}
+
+platform(
+    name = "linux_x86_64",
+    constraint_values = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:linux",
+    ],
+    exec_properties = exec_properties,
+)
+
+config_setting(
+    name = "linux-x86_64",
+    constraint_values = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:linux",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+platform(
+    name = "linux_luckfox",
+    constraint_values = [
+        "@platforms//cpu:armv7",
+        "@platforms//os:linux",
+    ],
+    exec_properties = exec_properties,
+)
+
+config_setting(
+    name = "linux-luckfox",
+    constraint_values = [
+        "@platforms//cpu:armv7",
+        "@platforms//os:linux",
+    ],
+    visibility = ["//visibility:public"],
+)

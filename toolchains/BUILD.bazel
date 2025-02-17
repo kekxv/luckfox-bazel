@@ -1,0 +1,11 @@
+# For use in Incompatible Target Skipping:
+# https://docs.bazel.build/versions/main/platforms.html#skipping-incompatible-targets
+#
+# Specifically this lets targets declare incompatibility with some set of
+# platforms. See
+# https://docs.bazel.build/versions/main/platforms.html#more-expressive-constraints
+# for some more details.
+exports_files([
+    "toolchains.MODULE.bazel",
+    "wrappers/wrapper",
+])

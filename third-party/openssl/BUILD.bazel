@@ -1,0 +1,76 @@
+"""An openssl build file based on a snippet found in the github issue:
+https://github.com/bazelbuild/rules_foreign_cc/issues/337
+"""
+
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
+
+exports_files(["repositories.MODULE.bazel"])
+
+# Read https://wiki.openssl.org/index.php/Compilation_and_Installation
+
+CONFIGURE_OPTIONS = [
+    "no-shared",
+    "no-sse2",
+    "-static",
+]
+
+configure_make(
+    name = "openssl-build",
+    args = ["-j4"],
+    configure_command = "Configure",
+    configure_options = CONFIGURE_OPTIONS + select({
+        "//toolchains/platforms:linux-x86_64": [
+            #"linux-x86_64",
+            "-fPIC",
+        ],
+        "//toolchains/platforms:linux-luckfox": [
+            "linux-armv4",
+            "no-asm",
+            "no-async",
+            "-march=armv7-a",
+            "-mfpu=neon",
+            "-fPIC",
+        ],
+        "//conditions:default": [
+            "-fPIC",
+        ],
+    }),
+    env = select({
+        "@platforms//os:linux": {
+            "CFLAGS": "-fPIC",
+            "CPPFLAGS": "-fPIC",
+        },
+        "//conditions:default": {},
+    }),
+    lib_source = "@openssl//:all",
+    linkopts = select({
+        "//conditions:default": [
+        ],
+    }),
+    out_lib_dir = select({
+        "//toolchains/platforms:linux-x86_64": "lib64",
+        "//conditions:default": "lib",
+    }),
+    out_static_libs = [
+        "libssl.a",
+        "libcrypto.a",
+    ],
+    target_compatible_with = select({
+        "//conditions:default": [],
+    }),
+    targets = [
+        "build_libs",
+        "install_dev",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "openssl",
+    visibility = ["//visibility:public"],
+    deps = select({
+        "//conditions:default": [
+            ":openssl-build",
+        ],
+    }),
+)

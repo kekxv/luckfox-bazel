@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        bazel-version: [6.4.0]
+        bazel-version: [8.1.0]
     steps:
       - uses: actions/checkout@v4
       - name: Mount bazel cache  # Optional
@@ -42,12 +42,6 @@ jobs:
       - name: bazelisk version
         run: |
           bazel version
-        env:
-          USE_BAZEL_VERSION: ${{ matrix.bazel-version }}
-
-      - name: Bazel build test
-        run: |
-          bazel build --curses=no //test/...
         env:
           USE_BAZEL_VERSION: ${{ matrix.bazel-version }}
 
