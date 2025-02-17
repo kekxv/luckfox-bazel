@@ -1,0 +1,63 @@
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
+
+exports_files([
+    "repositories.MODULE.bazel",
+])
+
+_CACHE_ENTRIES = dict({
+    "BUILD_SHARED_LIBS": "OFF",
+    "BUILD_STATIC_LIBS": "ON",
+    "CMAKE_BUILD_TYPE": "RELEASE",
+    "BUILD_EXAMPLES": "OFF",
+    "BUILD_TESTING": "OFF",
+    "CURL_ENABLE_SSL": "ON",
+    "CURL_USE_OPENSSL": "ON",
+    "BUILD_CURL_EXE": "OFF",
+    "CMAKE_PREFIX_PATH": "$$EXT_BUILD_DEPS$$/openssl;$$EXT_BUILD_DEPS$$/zlib",
+})
+
+cmake(
+    name = "curl",
+    build_args = ["-j2"],
+    cache_entries = select({
+        "//conditions:default": _CACHE_ENTRIES,
+    }),
+    defines = select({
+        "//conditions:default": [],
+    }),
+    generate_args = select({
+        "//conditions:default": [],
+    }),
+    generate_crosstool_file = False,
+    lib_source = "@curl//:all",
+    linkopts = select({
+        "//conditions:default": [
+            "-std=c++11",
+            "-ldl",
+            "-fPIC",
+        ],
+    }),
+    out_static_libs = ["libcurl.a"],
+    visibility = ["//visibility:public"],
+    deps = select({
+        "//conditions:default": [
+            "//third-party/openssl",
+            "//third-party/zlib",
+        ],
+    }),
+)
+
+cc_test(
+    name = "test_curl",
+    srcs = ["test/test_curl.cpp"],
+    linkopts = select({
+        "//conditions:default": [
+        ],
+    }),
+    deps = [
+        ":curl",
+        "//third-party/openssl",
+        "//third-party/zlib",
+        "@googletest//:gtest_main",
+    ],
+)

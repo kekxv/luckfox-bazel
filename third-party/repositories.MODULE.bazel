@@ -1,0 +1,15 @@
+"""A centralized module defining all repositories required for third party examples of rules_foreign_cc"""
+
+include("//third-party/curl:repositories.MODULE.bazel")
+
+include("//third-party/ncnn:repositories.MODULE.bazel")
+
+include("//third-party/opencv:repositories.MODULE.bazel")
+
+include("//third-party/openssl:repositories.MODULE.bazel")
+
+include("//third-party/protobuf:repositories.MODULE.bazel")
+
+include("//third-party/zlib:repositories.MODULE.bazel")
+
+include("//third-party/zxing-cpp:repositories.MODULE.bazel")

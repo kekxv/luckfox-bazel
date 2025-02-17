@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+TOOLCHAIN_NAME=linux-gnu-x86_64
+NAME=$(basename "$0")
+if [ "$NAME" == "wrapper" ];then
+  exit 0
+fi
+if [ "$(uname)" == "Darwin" ] ;then
+  # Mac OS X 操作系统
+  exec "${NAME}" "$@"
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ] ;then
+  # GNU/Linux操作系统
+  ROOT_PATH=""
+  if [ -z "$EXT_BUILD_ROOT" ]
+  then
+    IFS="/"
+    array=($0)
+    for i in "${array[@]}"; #accessing each element of array
+    do
+      if [ "$i" = "toolchains" ]; then
+        break
+      else
+        ROOT_PATH="${ROOT_PATH}${i}/"
+      fi
+    done
+  else
+    ROOT_PATH="$EXT_BUILD_ROOT/"
+  fi
+  TOOLCHAIN_NAME=`ls "${ROOT_PATH}external" | grep -m1 $TOOLCHAIN_NAME`
+  TOOLCHAIN_BINDIR=external/$TOOLCHAIN_NAME/bin/x86_64-linux-
+  export LD_LIBRARY_PATH="${ROOT_PATH}external/$TOOLCHAIN_NAME/lib/"
+  exec "$ROOT_PATH${TOOLCHAIN_BINDIR}""${NAME}" "$@"
+elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ] ;then
+  # Windows NT操作系统
+  exit 0
+fi

@@ -1,0 +1,28 @@
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "gcc-armv7l-linux-ulibc-luckfox",
+    build_file_content = """filegroup(name = "toolchain", srcs = glob(["**"]), visibility = ["//visibility:public"])""",
+    integrity = "sha256-9q8QMKdGtKxr8ycKRtefYqISqdzH5mG0oVLOR2f4DuI=",
+    type = "tar.gz",
+    url = "https://github.com/kekxv/luckfox-bazel/releases/download/linux-rockchip830-uclibcgnu-toolchain/arm-rockchip830-linux-uclibcgnueabihf.tar.gz",
+)
+
+http_archive(
+    name = "glibc-linux-gnu-x86_64",
+    build_file_content = """filegroup(name = "toolchain", srcs = glob(["**"]), visibility = ["//visibility:public"])""",
+    integrity = "sha256-hq7+2gJWgu+FkI/x0cimrps7ueq5cDMQ2jCzdNu2DWE=",
+    strip_prefix = "",
+    type = "tar.bz2",
+    url = "https://github.com/ClangTools/clang-binaries/releases/download/linux-gcc12-x86_64-buildroot-2022.11.3-glibc.2.36/linux-gcc12-x86_64-buildroot-2022.11.3-gnu-glibc_2.36.tar.bz2",
+)
+
+register_toolchains(
+    # TODO local build disable, enable when remote. Linux glibc toolchain for x86_64
+    # "//toolchains/toolchains/glibc-linux-gnu-x86_64:glibc-linux-gnu-x86_64_linux_toolchain",
+    "//toolchains/toolchains/gcc-armv7l-linux-ulibc-luckfox:gcc-armv7l-linux-ulibc-luckfox_linux_toolchain",
+)
+
+register_execution_platforms(
+    "//toolchains/platforms:linux_x86_64",
+)

@@ -1,9 +1,5 @@
 cc_binary(
     name = "helloworld",
     srcs = ["helloworld.cpp"],
-    linkopts = select({
-        "//conditions:default": [
-        ],
-    }),
     deps = [],
 )

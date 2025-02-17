@@ -6,9 +6,14 @@
       <excludeFolder url="file://$MODULE_DIR$/../.." />
       <excludeFolder url="file://$MODULE_DIR$/../../../bazel-bin" />
       <excludeFolder url="file://$MODULE_DIR$/../../../bazel-genfiles" />
-      <excludeFolder url="file://$MODULE_DIR$/../../../bazel-luckfox" />
+      <excludeFolder url="file://$MODULE_DIR$/../../../bazel-luckfox-bazel" />
       <excludeFolder url="file://$MODULE_DIR$/../../../bazel-out" />
       <excludeFolder url="file://$MODULE_DIR$/../../../bazel-testlogs" />
+      <excludePattern pattern="bazel-bin" />
+      <excludePattern pattern="bazel-genfiles" />
+      <excludePattern pattern="bazel-out" />
+      <excludePattern pattern="bazel-testlogs" />
+      <excludePattern pattern="bazel-luckfox-bazel" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

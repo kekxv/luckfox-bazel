@@ -1,5 +1,7 @@
 load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
 
+exports_files(["repositories.MODULE.bazel"])
+
 _CACHE_ENTRIES = {
     "BUILD_SHARED_LIBS": "OFF",
     "CMAKE_SYSTEM_NAME": "Linux",
@@ -20,22 +22,16 @@ cmake(
     build_args = ["-j3"],
     cache_entries = _CACHE_ENTRIES,
     #copts = ["-fopenmp"],
-    generate_args = select({
-        "//conditions:default": [],
-    }),
+    generate_args = [],
     generate_crosstool_file = False,
-    lib_source = select({
-        "//conditions:default": "@ncnn//:all",
-    }),
-    linkopts = select({
-        "//conditions:default": [
-            #"-ldl",
-            #"-lresolv",
-            #"-fopenmp",
-            "-std=c++11",
-            "-lstdc++",
-        ],
-    }),
+    lib_source = "@ncnn//:all",
+    linkopts = [
+        #"-ldl",
+        #"-lresolv",
+        #"-fopenmp",
+        "-std=c++11",
+        "-lstdc++",
+    ],
     out_static_libs = [
         "libncnn.a",
     ],
