@@ -9,14 +9,6 @@ filegroup(name = "all", srcs = glob(["**"]), visibility = ["//visibility:public"
 http_archive(
     name = "zlib_patch",
     build_file_content = all_content,
-    patch_cmds = [
-        # "find . -name 'CMakeLists.txt' -exec sed -i.orig '186d' {} +",
-        "find . -name 'CMakeLists.txt' -exec sed -i.orig '77d' {} +",
-        "sed -i.bak 's/RUNTIME DESTINATION \"${INSTALL_BIN_DIR}\"/RUNTIME DESTINATION \"${INSTALL_BIN_DIR}\"\\n        RUNTIME DESTINATION \"${INSTALL_LIB_DIR}\"/g' CMakeLists.txt",
-        "sed -i.bak 's/project(zlib C)/project(zlib C)\\nadd_definitions(-fPIC)/g' CMakeLists.txt",
-        "sed -i.bak 's/install(TARGETS zlib zlibstatic/install(TARGETS zlibstatic/g' CMakeLists.txt",
-        "sed -i.bak 's/#define NOUNCRYPT/ \\/\\/#define NOUNCRYPT/g' contrib/minizip/unzip.c",
-    ],
     sha256 = "b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30",
     strip_prefix = "zlib-1.2.13",
     urls = [
