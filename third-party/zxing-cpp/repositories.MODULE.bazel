@@ -9,7 +9,6 @@ filegroup(name = "all", srcs = glob(["**"]), visibility = ["//visibility:public"
 http_archive(
     name = "zxing",
     build_file_content = all_content,
-    patch_cmds = [],
     sha256 = "02078ae15f19f9d423a441f205b1d1bee32349ddda7467e2c84e8f08876f8635",
     strip_prefix = "zxing-cpp-2.2.1",
     urls = [

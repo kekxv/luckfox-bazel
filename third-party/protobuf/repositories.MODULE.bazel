@@ -5,8 +5,6 @@ http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "ht
 http_archive(
     name = "protobuf",
     build_file_content = """filegroup(name = "all", srcs = glob(["**"]), visibility = ["//visibility:public"])""",
-    patch_cmds = [
-    ],
     sha256 = "ce265155f21be19047df17f7220522ab38ffa8d77027e7baaf9bf7bbd726e802",
     strip_prefix = "protobuf-3.19.6",
     type = "tar.gz",

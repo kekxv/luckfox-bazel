@@ -1,0 +1,16 @@
+--- modules/dnn/src/layers/elementwise_layers.cpp	2025-02-20 16:06:09
++++ modules/dnn/src/layers/elementwise_layers.cpp	2025-02-20 16:06:48
+@@ -1535,10 +1535,10 @@ struct RoundFunctor : public BaseDefaultFunctor<RoundF
+     inline float calculate(float x) const
+     {
+         // Rounds to even numbers in halfway cases, so 2.5 -> 2, -2.5 -> -2
+-        int old_rounding_direction = std::fegetround();
+-        std::fesetround(FE_TONEAREST);
++        //int old_rounding_direction = std::fegetround();
++        //std::fesetround(FE_TONEAREST);
+         float y = std::nearbyint(x);
+-        std::fesetround(old_rounding_direction);
++        //std::fesetround(old_rounding_direction);
+         return y;
+     }
+ 
