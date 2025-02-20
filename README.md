@@ -1,5 +1,5 @@
 中文 
-[English](#-luckfox-compilation-environment) 
+[English](#luckfox-compilation-environment) 
 
 # luckfox 编译环境
 
