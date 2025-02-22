@@ -1,5 +1,10 @@
 load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
 
+exports_files([
+    "cmake.OpenCVUtils.cmake.patch",
+    "modules.dnn.src.layers.elementwise_layers.cpp.patch",
+])
+
 _OPENCV_CACHE = {
     "BUILD_OPENJPEG": "OFF",
     "BUILD_PNG": "OFF",

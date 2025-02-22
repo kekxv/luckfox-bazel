@@ -1,0 +1,11 @@
+--- cmake/OpenCVUtils.cmake	2023-12-12 14:53:32
++++ cmake/OpenCVUtils.cmake	2025-02-20 16:02:11
+@@ -1471,7 +1471,7 @@ macro(__ocv_push_target_link_libraries)
+     endif()
+     set(OPENCV_MODULE_${target}_LINK_DEPS ${OPENCV_MODULE_${target}_LINK_DEPS} ${ARGN} CACHE INTERNAL "" FORCE)
+   else()
+-    target_link_libraries(${target} ${ARGN})
++    target_link_libraries(${target} ${ARGN} -std=c++11 -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread )
+   endif()
+ endmacro()
+ 
