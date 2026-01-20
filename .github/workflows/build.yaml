@@ -32,14 +32,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: bazel-contrib/setup-bazel@v0.14.0
+      - uses: bazel-contrib/setup-bazel@0.18.0
         with:
-          bazelisk-version: 1.25.0
-          # 避免每次下载 Bazelisk
+          # Avoid downloading Bazel every time.
           bazelisk-cache: true
-          # 为当前 workflow 存储构建缓存
+          # Store build cache per workflow.
           disk-cache: ${{ github.workflow }}
-          # 在不同的 workflows 之间共享 repository 缓存 (下载的外部依赖)
+          # Share repository cache between workflows.
           repository-cache: true
 
       - name: Check Bazel version
