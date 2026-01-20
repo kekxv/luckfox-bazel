@@ -1,0 +1,31 @@
+{
+  "tasks": [
+    {
+      "label": "bazel build",
+      "type": "shell",
+      "command": "bazel",
+      "args": [
+        "build",
+        "//..."
+      ],
+      "windows": {
+        "command": "bazel",
+        "args": [
+          "build",
+          "//..."
+        ]
+      },
+      "osx": {
+        "command": "bazel",
+        "args": [
+          "build",
+          "//..."
+        ]
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}

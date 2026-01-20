@@ -1,0 +1,3 @@
+exports_files(["repositories.MODULE.bazel"])
+
+package(default_visibility = ["//visibility:public"])

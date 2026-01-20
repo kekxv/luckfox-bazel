@@ -1,0 +1,12 @@
+--- /dev/null	2026-01-09 16:58:15
++++ MODULE.bazel	2026-01-09 16:56:19
+@@ -0,0 +1,9 @@
++module(
++    name = "opencv-mobile-luckfox",
++    version = "0.1.0",
++)
++
++bazel_dep(name = "platforms", version = "1.0.0")
++bazel_dep(name = "rules_cc", version = "0.2.13")
++bazel_dep(name = "googletest", version = "1.17.0.bcr.1")
++bazel_dep(name = "bazel_skylib", version = "1.8.2")

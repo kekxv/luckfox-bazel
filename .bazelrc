@@ -1,0 +1,7 @@
+build:linux                --platforms=@cc_toolchains_linux//:linux-x86_64
+build:linux-luckfox        --platforms=@cc_toolchains_linux//:linux-armv7l-luckfox
+
+# 额外执行的平台
+build:linux-remote         --host_platform=@cc_toolchains_linux//:linux-x86_64
+build:linux-remote         --extra_execution_platforms=@cc_toolchains_linux//:linux-x86_64
+

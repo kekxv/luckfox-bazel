@@ -1,0 +1,32 @@
+--- /dev/null	2026-01-09 16:58:05
++++ BUILD.bazel	2026-01-09 16:55:57
+@@ -0,0 +1,29 @@
++config_setting(
++    name = "linux-luckfox",
++    constraint_values = [
++        "@platforms//cpu:arm",
++        "@platforms//os:linux",
++    ],
++)
++cc_library(
++    name = "opencv",
++    srcs = [
++        "lib/libopencv_highgui.a",
++        "lib/libopencv_features2d.a",
++        "lib/libopencv_video.a",
++        "lib/libopencv_photo.a",
++        "lib/libopencv_imgproc.a",
++        "lib/libopencv_core.a",
++    ],
++    hdrs = glob(["include/opencv4/**/*.h*"]),
++    defines = ["OPENCV_MOBILE"],
++    includes = [
++        "include",
++        "include/opencv4",
++    ],
++    target_compatible_with = select({
++       ":linux-luckfox": [],
++       "//conditions:default": ["@platforms//:incompatible"],
++    }),
++    visibility = ["//visibility:public"],
++)

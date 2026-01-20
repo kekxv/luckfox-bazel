@@ -1,0 +1,50 @@
+load("@rules_cc_resources//rules:defs.bzl", "cc_resources")
+
+cc_resources(
+    name = "coco_80_labels_list",
+    srcs = ["model/coco_80_labels_list.txt"],
+    data_type = "uint",  # Combines 4 bytes into one unsigned int
+    out_prefix = "model",
+)
+
+cc_resources(
+    name = "yolov5s_640_640_rknn",
+    srcs = ["model/yolov5s-640-640.rknn"],
+    data_type = "uint",  # Combines 4 bytes into one unsigned int
+    out_prefix = "model",
+)
+
+cc_library(
+    name = "yolov5s_640_640_rknn_bin",
+    srcs = [
+        ":coco_80_labels_list",
+        ":yolov5s_640_640_rknn",
+    ],
+    defines = ["YOLOV5S_640_640_RKNN_BIN_"],
+    includes = ["."],
+)
+
+cc_library(
+    name = "yolov5s",
+    srcs = ["src/postprocess.cpp"],
+    hdrs = [
+        "include/drm_func.h",
+        "include/postprocess.h",
+    ],
+    defines = ["RV1106_RV1103"],
+    includes = ["include"],
+    deps = [
+        ":yolov5s_640_640_rknn_bin",
+        "//third-party/librknn",
+    ],
+)
+
+cc_binary(
+    name = "test-yolov5s",
+    srcs = ["test/main.cpp"],
+    deps = [
+        ":yolov5s",
+        "@stb//:stb_image",
+        "@stb//:stb_image_resize2",
+    ],
+)

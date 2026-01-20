@@ -1,0 +1,16 @@
+archive_override(
+    module_name = "opencv-mobile-luckfox",
+    integrity = "sha256-0wWlXxa2BEI+BJNcFqGVEKDf5OKMnNMQjJleMUqKz4Q=",
+    patches = [
+        "//patches:opencv-mobile-luckfox/build.bazel.patch",
+        "//patches:opencv-mobile-luckfox/module.bazel.patch",
+    ],
+    strip_prefix = "opencv-mobile-4.13.0-luckfox-pico",
+    urls = ["https://github.com/nihui/opencv-mobile/releases/download/v35/opencv-mobile-4.13.0-luckfox-pico.zip"],
+)
+
+git_override(
+    module_name = "cc_toolchains_linux",
+    commit = "e525ee2689621f1806a08eebb1c16225d7ef9185",  # Check for the latest commit hash
+    remote = "https://github.com/kekxv/cc_toolchains_linux.git",
+)

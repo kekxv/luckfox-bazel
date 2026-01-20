@@ -1,0 +1,25 @@
+cc_library(
+    name = "librga",
+    srcs = [
+        "lib/librga.a",
+    ],
+    hdrs = glob(["include/*.h*"]),
+    includes = [
+        "include",
+    ],
+    target_compatible_with = select({
+        "@cc_toolchains_linux//platforms:linux-armv7l-luckfox": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    visibility = ["//visibility:public"],
+)
+
+cc_binary(
+    name = "test_rga",
+    srcs = ["test/test.cc"],
+    deps = [
+        ":librga",
+        "//third-party/librknn",
+        "@opencv-mobile-luckfox//:opencv",
+    ],
+)

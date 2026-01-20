@@ -1,0 +1,4 @@
+"""A centralized module defining all repositories required for third party examples of rules_foreign_cc"""
+
+include("//third-party/ncnn:repositories.MODULE.bazel")
+include("//third-party/zxing-cpp:repositories.MODULE.bazel")
