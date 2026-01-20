@@ -3,50 +3,49 @@ name: build
 on:
   push:
     branches: [ main ]
+    # 排除 README.md 修改触发构建
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'  # 可选：如果以后有 docs 目录也可排除
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+
+# 并发控制
+# 当同一个分支有新的 push 时，自动取消正在进行的旧构建，节省资源
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        bazel-version: [8.5.1]
+
+    # 使用环境变量定义版本，比 matrix 更简洁（如果是单版本）
+    env:
+      BAZEL_VERSION: 8.5.1
+      # Bazelisk 会自动读取这个环境变量，无需生成 .bazelversion 文件
+      USE_BAZEL_VERSION: 8.5.1
+
     steps:
       - uses: actions/checkout@v4
-      - name: Mount bazel cache  # Optional
-        uses: actions/cache@v3
+
+      - uses: bazel-contrib/setup-bazel@v0.14.0
         with:
-          path: "~/.cache/bazel"
-          key: bazel
-      - uses: bazel-contrib/setup-bazel@0.12.1
-        with:
-          bazelisk-version: 1.18.0
-          # Avoid downloading Bazel every time.
+          bazelisk-version: 1.25.0
+          # 避免每次下载 Bazelisk
           bazelisk-cache: true
-          # Store build cache per workflow.
+          # 为当前 workflow 存储构建缓存
           disk-cache: ${{ github.workflow }}
-          # Share repository cache between workflows.
+          # 在不同的 workflows 之间共享 repository 缓存 (下载的外部依赖)
           repository-cache: true
-      - name: Mount bazel cache  # Optional
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/bazel
-            ~/.cache/bazelisk
-          key: bazel
-      - name: Set Bazel Version ${{ matrix.bazel-version }} .
-        run: |
-          echo ${{ matrix.bazel-version }} > .bazelversion 
 
-      - name: bazelisk version
-        run: |
-          bazel version
-        env:
-          USE_BAZEL_VERSION: ${{ matrix.bazel-version }}
+      - name: Check Bazel version
+        run: bazel version
 
-      - name: Bazel build .
+      - name: Bazel build
+        # 增加 --color=yes 增强日志可读性
         run: |
-          bazel build --config=linux-luckfox --curses=no //...
-        env:
-          USE_BAZEL_VERSION: ${{ matrix.bazel-version }}
+          bazel build --config=linux-luckfox --curses=no --color=yes //...

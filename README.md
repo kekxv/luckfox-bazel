@@ -1,3 +1,6 @@
+中文 [English](#introduction-to-luckfox-bazel-project)
+
+
 # Luckfox Bazel 项目介绍
 
 本项目旨在为 [Luckfox (幸狐)](https://www.luckfox.cn/) 开发板提供一套高效的开发框架。
