@@ -1,136 +1,284 @@
-中文 
-[English](#luckfox-compilation-environment) 
+# Luckfox Bazel 项目介绍
 
-# luckfox 编译环境
+本项目旨在为 [Luckfox (幸狐)](https://www.luckfox.cn/) 开发板提供一套高效的开发框架。
 
-当前仓库是为了学习bazel 以及 luckfox 而创立。
+项目采用 [Bazel](https://bazel.build/install?hl=zh-cn) 进行构建管理，集成了 [OpenCV Mobile](https://github.com/nihui/opencv-mobile)、`RKNN` 以及 `RGA` 等核心组件，帮助开发者快速搭建环境并上手开发。
 
-> 注意：由于MODULE模式暂不支持参数，需要目前还需要定义一个 宿主机 的工具链才能工作。当前定义为 Linux amd64 作为宿主机的工具链。
+## 1. 环境与构建
 
-## 使用方式
+本项目基于 Linux 环境开发。推荐使用 **Linux 原生系统**、**虚拟机** 或 **Windows WSL**。
 
-### Linux 系统
+> **注意**：如果在非 Linux 环境下开发，建议使用远程编译模式，详见 [remote-docker-deploy/buildbarn/README.md](remote-docker-deploy/buildbarn/README.md)。
 
-目前只测试过`ubuntu`，理论上包括`wsl`在内都可以使用。
+项目已预定义 `.bazelrc` 配置文件，支持跨平台构建：
+
+```bash
+# .bazelrc 配置片段
+build:linux                --platforms=@cc_toolchains_linux//:linux-x86_64
+build:linux-luckfox        --platforms=@cc_toolchains_linux//:linux-armv7l-luckfox
+
+# 额外执行平台配置
+build:linux-remote         --host_platform=@cc_toolchains_linux//:linux-x86_64
+build:linux-remote         --extra_execution_platforms=@cc_toolchains_linux//:linux-x86_64
+```
+
+### 编译示例
+
+只需指定 `--config=linux-luckfox`，即可编译出适用于 Luckfox 的目标产物：
 
 ```shell
-# 编译测试项目
-bazel build //test/...
-# 编译整个项目
-bazel build //...
+  luckfox-bazel git:(main) $ bazel build --config=linux-luckfox test/helloworld:helloworld
+...
+INFO: Analyzed target //test/helloworld:helloworld (111 packages loaded, 3523 targets configured).
+Target //test/helloworld:helloworld up-to-date:
+  bazel-bin/test/helloworld/helloworld
+INFO: Build completed successfully, 6 total actions
+
+# 验证文件格式
+  luckfox-bazel git:(main) $ file bazel-bin/test/helloworld/helloworld
+bazel-bin/test/helloworld/helloworld: ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV)...
 ```
 
-### windows or macos 系统
+## 2. 第三方依赖管理
 
-对于其他系统，可以考虑将 [toolchains.bzl](toolchain%2Ftoolchains.bzl) 里面的编译链修改为对应系统的编译链，其中`windows`
-还需要修改[wrappers](toolchain%2Ftoolchains%2Fcc-armv7l-luckfox%2Fwrappers)下的脚本
-（`windows`比较麻烦，建议直接使用 `wsl`）。
+为了简化开发流程，项目已将 `librknn`、`librga`、`ncnn` 及 `opencv` 等常用库封装为 Bazel 依赖：
 
-### 远程编译
-
-所有的系统都可以进行远程编译。需要部署`bazel远程服务`，具体可以参考[远程执行概览](https://bazel.build/remote/rbe)
-，这里为了快速部署使用了 [buildfarm](https://github.com/bazelbuild/bazel-buildfarm)
-。可以通过[docker-compose.yaml](docker-bazel-buildfarm%2Fdocker-compose.yaml)快速启动。
-
-启动成功之后，记录IP地址，例如：192.168.1.100；或者127.0.0.1。然后修改文件 [.bazelrc](.bazelrc)
-
-更改为：
-
-```git
-- build:remote            --remote_executor=grpc://IP地址或者域名:8980
-- build:remote            --remote_cache=grpc://IP地址或者域名:8980
-+ build:remote            --remote_executor=grpc://192.168.1.100:8980
-+ build:remote            --remote_cache=grpc://192.168.1.100:8980
-
-- # build                   --config=remote
-+ build                   --config=remote
+```text
+third-party
+├── librga
+├── librknn
+├── ncnn
+└── zxing-cpp
 ```
 
-> 注意：
-> 如果远程编译没有工具链，则需要将[toolchains.MODULE.bazel](toolchains/toolchains.MODULE.bazel)的22取消注释
+### 接入方式
 
-然后就可以在项目里面进行编译：
+在 `BUILD.bazel` 中，只需将依赖添加到 `deps` 字段即可。
+
+**示例：集成 RKNN**
+*[test/yolov5/BUILD.bazel](test/yolov5/BUILD.bazel)*
+
+```bazel
+cc_library(
+    name = "yolov5s",
+    srcs = ["src/postprocess.cpp"],
+    hdrs = ["include/postprocess.h"],
+    defines = ["RV1106_RV1103"],
+    deps = [
+        ":yolov5s_640_640_rknn_bin",
+        "//third-party/librknn",  # 引入 RKNN 依赖
+    ],
+)
+```
+
+**示例：集成 RGA 与 OpenCV**
+*[third-party/librga/BUILD.bazel](third-party/librga/BUILD.bazel)*
+
+```bazel
+cc_binary(
+    name = "test_rga",
+    srcs = ["test/test.cc"],
+    deps = [
+        ":librga",
+        "//third-party/librknn",
+        "@opencv-mobile-luckfox//:opencv", # 引入 OpenCV 依赖
+    ],
+)
+```
+
+## 3. 实战案例：YOLOv5 推理
+
+本节以 YOLOv5 为例，演示如何从源码编译到板端运行。
+
+### 目录结构
+
+```text
+test/yolov5
+├── include          # 头文件
+├── model            # 模型与标签 (rknn, txt)
+├── src              # 后处理逻辑
+└── test             # 主程序入口
+```
+
+### 编译与构建
+
+直接通过 Bazel 构建目标：
 
 ```shell
-# 编译测试项目
-bazel build //test/...
-# 编译整个项目
-bazel build //...
+  luckfox-bazel git:(main) $ bazel build --config=linux-luckfox test/yolov5:test-yolov5s  
+...
+INFO: Analyzed target //test/yolov5:test-yolov5s (40 packages loaded, 5542 targets configured).
+INFO: From Generating C/C++ resources: yolov5s-640-640.rknn -> model_yolov5s-640-640...
+Target //test/yolov5:test-yolov5s up-to-date:
+  bazel-bin/test/yolov5/test-yolov5s
+INFO: Build completed successfully, 18 total actions
 ```
 
-# 参考文章
+### 板端运行结果
 
->
-> 关于 bazel
-> 远程服务 [远程执行概览](https://bazel.build/remote/rbe) [远程执行服务](https://bazel.build/community/remote-execution-services?hl=zh-cn)
->
-> bazel 交叉编译链 参考了 https://ltekieli.com/cross-compiling-with-bazel/
->
-> opencv-mobile 参考 https://zhuanlan.zhihu.com/p/670191385
->
-
-
-
-# luckfox Compilation Environment
-
-The current repository is established for learning Bazel and Luckfox.
-
-> Note: Since the MODULE mode currently does not support parameters, a toolchain for the host machine needs to be defined for it to work. It is currently defined for the Linux amd64 as the host toolchain.
-
-## How to Use
-
-### Linux Systems
-
-Currently, it has only been tested on `Ubuntu`, but theoretically, it should work on other distributions including `WSL`.
+将生成的 `test-yolov5s` 可执行文件传输至 Luckfox 开发板并执行：
 
 ```shell
-# Build the test project
-bazel build //test/...
-# Build the entire project
-bazel build //...
+[root@luckfox tmp]# ./test-yolov5s bus.jpg
+rknn_api/rknnrt version: 2.3.2 ...
+model input num: 1, output num: 3
+...
+Begin perf ...
+   0: Elapse Time = 100.09ms, FPS = 9.99
+model is NHWC input fmt
+ post_process Time = 10.06ms, FPS = 99.38
+person @ (208 244 286 506) 0.884136
+person @ (479 238 560 526) 0.863766
+bus @ (94 130 553 464) 0.697389
 ```
 
-### Windows or macOS Systems
+从日志可以看出，模型成功加载并准确识别了图像中的目标，性能表现符合预期。
 
-For other systems, you may consider modifying the compiler toolchain in [toolchains.bzl](toolchain%2Ftoolchains.bzl) to match the corresponding system. For `Windows`, you also need to modify the scripts under [wrappers](toolchain%2Ftoolchains%2Fcc-armv7l-luckfox%2Fwrappers) (compiling on Windows is more complicated, so it is recommended to use `WSL` directly).
+## 参考资料
 
-### Remote Compilation
+*   **Bazel 远程执行**：[Remote Execution Overview](https://bazel.build/remote/rbe), [Remote Services](https://bazel.build/community/remote-execution-services?hl=zh-cn)
+*   **Bazel 交叉编译**：[Cross Compiling with Bazel](https://ltekieli.com/cross-compiling-with-bazel/)
+*   **OpenCV Mobile**：[知乎专栏介绍](https://zhuanlan.zhihu.com/p/670191385)
 
-All systems can perform remote compilation. You need to deploy the `Bazel remote service`. For specifics, you can refer to the [Remote Execution Overview](https://bazel.build/remote/rbe). To expedite deployment, [Buildfarm](https://github.com/bazelbuild/bazel-buildfarm) is used. You can quickly start it up using [docker-compose.yaml](docker-bazel-buildfarm%2Fdocker-compose.yaml).
 
-After the successful start, record the IP address, for example: 192.168.1.100 or 127.0.0.1. Then modify the file [.bazelrc](.bazelrc)
+# Introduction to Luckfox Bazel Project
 
-Change it to:
+This project aims to provide an efficient development framework for the [Luckfox](https://www.luckfox.cn/) development board.
 
-```git
-- build:remote            --remote_executor=grpc://IP_address_or_domain:8980
-- build:remote            --remote_cache=grpc://IP_address_or_domain:8980
-+ build:remote            --remote_executor=grpc://192.168.1.100:8980
-+ build:remote            --remote_cache=grpc://192.168.1.100:8980
+It utilizes [Bazel](https://bazel.build/install?hl=en) for build management and integrates core components such as [OpenCV Mobile](https://github.com/nihui/opencv-mobile), `RKNN`, and `RGA`, allowing developers to quickly set up their environment and get started.
 
-- # build                   --config=remote
-+ build                   --config=remote
+## 1. Environment & Build
+
+This project is designed for a Linux environment. **Native Linux**, **Virtual Machines (VMs)**, or **Windows WSL** are recommended.
+
+> **Note:** If developing in a non-Linux environment, it is recommended to use the remote build mode. Please refer to [remote-docker-deploy/buildbarn/README.md](remote-docker-deploy/buildbarn/README.md) for details.
+
+The project comes with a pre-configured `.bazelrc` supporting cross-platform builds:
+
+```bash
+# .bazelrc snippet
+build:linux                --platforms=@cc_toolchains_linux//:linux-x86_64
+build:linux-luckfox        --platforms=@cc_toolchains_linux//:linux-armv7l-luckfox
+
+# Extra execution platforms
+build:linux-remote         --host_platform=@cc_toolchains_linux//:linux-x86_64
+build:linux-remote         --extra_execution_platforms=@cc_toolchains_linux//:linux-x86_64
 ```
 
-> Note:
-> If the remote build does not have a toolchain, you need to uncomment line 22 in [toolchains.MODULE.bazel](toolchains/toolchains.MODULE.bazel).
+### Build Example
 
-Then you can proceed to compile in the project:
+Simply specify the `--config=linux-luckfox` flag to compile the target artifacts for Luckfox:
 
 ```shell
-# Build the test project
-bazel build //test/...
-# Build the entire project
-bazel build //...
+  luckfox-bazel git:(main) $ bazel build --config=linux-luckfox test/helloworld:helloworld
+...
+INFO: Analyzed target //test/helloworld:helloworld (111 packages loaded, 3523 targets configured).
+Target //test/helloworld:helloworld up-to-date:
+  bazel-bin/test/helloworld/helloworld
+INFO: Build completed successfully, 6 total actions
+
+# Verify file format
+  luckfox-bazel git:(main) $ file bazel-bin/test/helloworld/helloworld
+bazel-bin/test/helloworld/helloworld: ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV)...
 ```
 
-# References
+## 2. Third-party Dependencies
 
->
-> About Bazel
-> Remote services [Remote Execution Overview](https://bazel.build/remote/rbe) [Remote Execution Services](https://bazel.build/community/remote-execution-services?hl=en)
->
-> Bazel Cross-Compilation Chain reference: https://ltekieli.com/cross-compiling-with-bazel/
->
-> OpenCV for mobile reference: https://zhuanlan.zhihu.com/p/670191385
->
+To simplify the development workflow, common libraries such as `librknn`, `librga`, `ncnn`, and `opencv` have been encapsulated as Bazel dependencies:
+
+```text
+third-party
+├── librga
+├── librknn
+├── ncnn
+└── zxing-cpp
+```
+
+### Integration
+
+In `BUILD.bazel`, simply add the libraries to the `deps` field.
+
+**Example: RKNN Integration**
+*[test/yolov5/BUILD.bazel](test/yolov5/BUILD.bazel)*
+
+```bazel
+cc_library(
+    name = "yolov5s",
+    srcs = ["src/postprocess.cpp"],
+    hdrs = ["include/postprocess.h"],
+    defines = ["RV1106_RV1103"],
+    deps = [
+        ":yolov5s_640_640_rknn_bin",
+        "//third-party/librknn",  # Import RKNN dependency
+    ],
+)
+```
+
+**Example: RGA & OpenCV Integration**
+*[third-party/librga/BUILD.bazel](third-party/librga/BUILD.bazel)*
+
+```bazel
+cc_binary(
+    name = "test_rga",
+    srcs = ["test/test.cc"],
+    deps = [
+        ":librga",
+        "//third-party/librknn",
+        "@opencv-mobile-luckfox//:opencv", # Import OpenCV dependency
+    ],
+)
+```
+
+## 3. Practical Case: YOLOv5 Inference
+
+This section demonstrates how to compile from source and run on the board using YOLOv5 as an example.
+
+### Directory Structure
+
+```text
+test/yolov5
+├── include          # Headers
+├── model            # Models & Labels (rknn, txt)
+├── src              # Post-processing logic
+└── test             # Main entry point
+```
+
+### Compilation
+
+Build the target directly using Bazel:
+
+```shell
+  luckfox-bazel git:(main) $ bazel build --config=linux-luckfox test/yolov5:test-yolov5s  
+...
+INFO: Analyzed target //test/yolov5:test-yolov5s (40 packages loaded, 5542 targets configured).
+INFO: From Generating C/C++ resources: yolov5s-640-640.rknn -> model_yolov5s-640-640...
+Target //test/yolov5:test-yolov5s up-to-date:
+  bazel-bin/test/yolov5/test-yolov5s
+INFO: Build completed successfully, 18 total actions
+```
+
+### Running on Board
+
+Transfer the generated `test-yolov5s` executable to the Luckfox board and execute it:
+
+```shell
+[root@luckfox tmp]# ./test-yolov5s bus.jpg
+rknn_api/rknnrt version: 2.3.2 ...
+model input num: 1, output num: 3
+...
+Begin perf ...
+   0: Elapse Time = 100.09ms, FPS = 9.99
+model is NHWC input fmt
+ post_process Time = 10.06ms, FPS = 99.38
+person @ (208 244 286 506) 0.884136
+person @ (479 238 560 526) 0.863766
+bus @ (94 130 553 464) 0.697389
+```
+
+As seen in the logs, the model loads successfully and accurately identifies objects in the image, with performance meeting expectations.
+
+## References
+
+*   **Bazel Remote Execution**: [Remote Execution Overview](https://bazel.build/remote/rbe), [Remote Services](https://bazel.build/community/remote-execution-services)
+*   **Bazel Cross-compiling**: [Cross Compiling with Bazel](https://ltekieli.com/cross-compiling-with-bazel/)
+*   **OpenCV Mobile**: [Zhihu Article](https://zhuanlan.zhihu.com/p/670191385)

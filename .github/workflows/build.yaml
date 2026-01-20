@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        bazel-version: [8.1.0]
+        bazel-version: [8.5.1]
     steps:
       - uses: actions/checkout@v4
       - name: Mount bazel cache  # Optional
@@ -47,6 +47,6 @@ jobs:
 
       - name: Bazel build .
         run: |
-          bazel build --curses=no //...
+          bazel build --config=linux-luckfox --curses=no //...
         env:
           USE_BAZEL_VERSION: ${{ matrix.bazel-version }}
